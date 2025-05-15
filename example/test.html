@@ -8,6 +8,11 @@
     .highlighted {
         background-color: yellow;
     }
+    #annotator-container {
+        border: 1px solid #ccc;
+        display: inline-block;
+        margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -30,6 +35,8 @@
         </table>
     </div>
 
+    <div id="annotator-container"></div> <!-- Container for the annotator -->
+
     <button id="export-button">Export Image</button>
 
     <script src="https://cdn.jsdelivr.net/gh/jkb-novak-birne/image-annotator-lib@v1.0.0/dist/image-annotator-lib.js"></script>
@@ -44,10 +51,13 @@
             {id:3, x: 200, y: 200, data: 'Point 3' }
         ];
 
+        const annotatorContainer = document.getElementById('annotator-container');
+
         const annotator = new Annotator(
             'https://cdn.shopify.com/s/files/1/0685/5321/2195/files/image.png?v=1747303430',
             null,
-            predefinedPoints
+            predefinedPoints,
+            annotatorContainer // Specify the container for the annotator
         );
 
         function refreshTable(points) {
