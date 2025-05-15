@@ -154,7 +154,10 @@
             this.points.push(point);
             this.drawPoint(point);
             if (typeof this.onPointAdded === 'function') {
-                this.onPointAdded(point, this.points);
+                const result = this.onPointAdded(point, this.points);
+                if (result instanceof Promise) {
+                    result.catch(error => console.error('Error in onPointAdded:', error)); // Handle async errors
+                }
             }
         }
 
