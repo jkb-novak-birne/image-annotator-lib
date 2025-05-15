@@ -34,7 +34,7 @@ const annotator = new Annotator(imageUrl, onPointAdded, initialPoints);
 
 ## Example Usage (CDN)
 
-Include the library in your project using a CDN:
+Include the library in your project using jsDelivr:
 
 ```html
 <!DOCTYPE html>
@@ -62,7 +62,7 @@ Include the library in your project using a CDN:
   </div>
   <button id="export-button">Export Image</button>
 
-  <script src="https://cdn.example.com/image-annotator-lib.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/jkb-novak-birne/image-annotator-lib/dist/image-annotator-lib.js"></script>
   <script>
     const Annotator = ImageAnnotatorLib.Annotator;
 
