@@ -18,7 +18,12 @@
                 throw new Error('Container with ID "image-annotator" not found.');
             }
 
+            this.originalImageWidth = 0; // Store the original image width
+            this.originalImageHeight = 0; // Store the original image height
+            this.scaleFactor = 1; // Scaling factor for points
+
             this.loadImage();
+            window.addEventListener('resize', () => this.resizeCanvas()); // Handle resizing
         }
 
         async loadImage() {
@@ -32,6 +37,8 @@
                 const img = new Image();
                 img.src = dataUrl;
                 img.onload = () => {
+                    this.originalImageWidth = img.width;
+                    this.originalImageHeight = img.height;
                     this.renderImage(img);
                 };
             } catch (error) {
@@ -42,12 +49,11 @@
         renderImage(img) {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-            this.container.appendChild(canvas); // Append canvas to the resolved container
             this.canvas = canvas;
             this.ctx = ctx;
+
+            this.resizeCanvas(); // Adjust canvas size and scale points
+            this.container.appendChild(canvas); // Append canvas to the resolved container
             this.setupCanvasEvents();
 
             // Draw predefined points
@@ -56,17 +62,37 @@
             this.setupHoverEvents();
         }
 
+        resizeCanvas() {
+            if (!this.canvas || !this.ctx) return;
+
+            // Calculate the scaling factor based on the container's width
+            const containerWidth = this.container.offsetWidth;
+            this.scaleFactor = containerWidth / this.originalImageWidth;
+
+            // Adjust canvas size
+            this.canvas.width = containerWidth;
+            this.canvas.height = this.originalImageHeight * this.scaleFactor;
+
+            // Redraw the image and points
+            const img = new Image();
+            img.src = this.imageUrl;
+            img.onload = () => {
+                this.ctx.drawImage(img, 0, 0, this.canvas.width, this.canvas.height);
+                this.points.forEach(point => this.drawPoint(point));
+            };
+        }
+
         setupCanvasEvents() {
             this.canvas.addEventListener('click', (event) => {
                 const rect = this.canvas.getBoundingClientRect();
-                const x = event.clientX - rect.left;
-                const y = event.clientY - rect.top;
+                const x = (event.clientX - rect.left) / this.scaleFactor; // Scale the x-coordinate
+                const y = (event.clientY - rect.top) / this.scaleFactor; // Scale the y-coordinate
 
                 // Check if a point was clicked
                 const clickedPoint = this.points.find(point => {
                     const dx = x - point.x;
                     const dy = y - point.y;
-                    return Math.sqrt(dx * dx + dy * dy) <= 10; // 10px radius for click detection
+                    return Math.sqrt(dx * dx + dy * dy) <= 10 / this.scaleFactor; // Adjust radius for scaling
                 });
 
                 // If a point was clicked, do not create a new one
@@ -84,14 +110,14 @@
         setupPointClickEvents() {
             this.canvas.addEventListener('click', (event) => {
                 const rect = this.canvas.getBoundingClientRect();
-                const x = event.clientX - rect.left;
-                const y = event.clientY - rect.top;
+                const x = (event.clientX - rect.left) / this.scaleFactor; // Scale the x-coordinate
+                const y = (event.clientY - rect.top) / this.scaleFactor; // Scale the y-coordinate
 
                 // Check if a point was clicked
                 const clickedPoint = this.points.find(point => {
                     const dx = x - point.x;
                     const dy = y - point.y;
-                    return Math.sqrt(dx * dx + dy * dy) <= 10; // 10px radius for click detection
+                    return Math.sqrt(dx * dx + dy * dy) <= 10 / this.scaleFactor; // Adjust radius for scaling
                 });
 
                 if (clickedPoint) {
@@ -151,29 +177,27 @@
         }
 
         drawPoint(point) {
+            // Scale the point coordinates
+            const scaledX = point.x * this.scaleFactor;
+            const scaledY = point.y * this.scaleFactor;
+
             // Draw the point
             this.ctx.fillStyle = point.id === this.selectedPointId ? 'blue' : 'red'; // Highlight selected point in blue
             this.ctx.beginPath();
-            this.ctx.arc(point.x, point.y, 10, 0, Math.PI * 2); // Larger radius for better visibility
+            this.ctx.arc(scaledX, scaledY, 10 * this.scaleFactor, 0, Math.PI * 2); // Adjust radius for scaling
             this.ctx.fill();
 
             // Draw the point ID
             this.ctx.fillStyle = 'white';
-            this.ctx.font = '12px Arial';
+            this.ctx.font = `${12 * this.scaleFactor}px Arial`; // Adjust font size for scaling
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
-            this.ctx.fillText(point.id, point.x, point.y);
+            this.ctx.fillText(point.id, scaledX, scaledY);
         }
 
         redrawPoints() {
             // Clear the canvas and redraw all points
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            const img = new Image();
-            img.src = this.imageUrl;
-            img.onload = () => {
-                this.ctx.drawImage(img, 0, 0);
-                this.points.forEach(point => this.drawPoint(point));
-            };
+            this.resizeCanvas(); // Automatically redraws the image and points
         }
 
         exportImage() {
