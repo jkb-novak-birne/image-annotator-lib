@@ -35,11 +35,11 @@
         </table>
     </div>
 
-    <div id="image_annotator"></div> <!-- Container for the annotator -->
+    <div id="image-annotator"></div> <!-- Container for the annotator -->
 
     <button id="export-button">Export Image</button>
 
-    <script src="https://cdn.jsdelivr.net/gh/jkb-novak-birne/image-annotator-lib@v1.0.0/dist/image-annotator-lib.js"></script>
+    <script src="../dist/image-annotator-lib.js"></script>
     <script>
         // Access the Annotator class from the ImageAnnotatorLib object
         const Annotator = ImageAnnotatorLib.Annotator;
@@ -55,7 +55,6 @@
             'https://cdn.shopify.com/s/files/1/0685/5321/2195/files/image.png?v=1747303430',
             null,
             predefinedPoints,
-            'image_annotator' // Specify the container by ID
         );
 
         function refreshTable(points) {

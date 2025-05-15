@@ -1,18 +1,15 @@
 class Annotator {
-    constructor(imageUrl, onPointAdded, initialPoints = [], container = 'body') {
+    constructor(imageUrl, onPointAdded, initialPoints = []) {
         this.imageUrl = imageUrl;
         this.points = initialPoints.map((point, index) => ({ ...point, id: index + 1 })); // Assign IDs to points
         this.onPointAdded = null;
         this.onPointClicked = null; // Callback for point click events
         this.selectedPointId = null; // Track the selected point
 
-        // Resolve the container (either an element or an ID)
-        this.container = typeof container === 'string' 
-            ? (container === 'body' ? document.body : document.getElementById(container)) 
-            : container;
-
+        // Set the container as a constant
+        this.container = document.getElementById('image-annotator');
         if (!this.container) {
-            throw new Error(`Container with ID "${container}" not found.`);
+            throw new Error('Container with ID "image-annotator" not found.');
         }
 
         this.loadImage();

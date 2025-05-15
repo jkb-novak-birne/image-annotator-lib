@@ -5,13 +5,19 @@
 })(this, (function () { 'use strict';
 
     class Annotator {
-        constructor(imageUrl, onPointAdded, initialPoints = [], container = document.body) {
+        constructor(imageUrl, onPointAdded, initialPoints = []) {
             this.imageUrl = imageUrl;
             this.points = initialPoints.map((point, index) => ({ ...point, id: index + 1 })); // Assign IDs to points
             this.onPointAdded = null;
             this.onPointClicked = null; // Callback for point click events
             this.selectedPointId = null; // Track the selected point
-            this.container = container; // DOM container for the canvas
+
+            // Set the container as a constant
+            this.container = document.getElementById('image-annotator');
+            if (!this.container) {
+                throw new Error('Container with ID "image-annotator" not found.');
+            }
+
             this.loadImage();
         }
 
@@ -39,7 +45,7 @@
             canvas.width = img.width;
             canvas.height = img.height;
             ctx.drawImage(img, 0, 0);
-            this.container.appendChild(canvas); // Append canvas to the specified container
+            this.container.appendChild(canvas); // Append canvas to the resolved container
             this.canvas = canvas;
             this.ctx = ctx;
             this.setupCanvasEvents();
