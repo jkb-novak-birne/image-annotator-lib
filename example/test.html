@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Annotator Test</title>
+  <style>
+    .highlighted {
+        background-color: yellow;
+    }
+  </style>
+</head>
+<body>
+    <h1>Image Annotator Test</h1>
+    <div id="points-container">
+        <h2>Collected Points:</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>X Coordinate</th>
+                    <th>Y Coordinate</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="points-table-body">
+                <!-- Rows will be dynamically added here -->
+            </tbody>
+        </table>
+    </div>
+
+    <button id="export-button">Export Image</button>
+
+    <script src="../dist/image-annotator-lib.js"></script>
+    <script>
+        // Access the Annotator class from the ImageAnnotatorLib object
+        const Annotator = ImageAnnotatorLib.Annotator;
+
+        // Predefined points
+        const predefinedPoints = [
+            {id:1, x: 50, y: 300, data: 'Point 1' },
+            {id:2, x: 150, y: 100, data: 'Point 2' },
+            {id:3, x: 200, y: 200, data: 'Point 3' }
+        ];
+
+        const annotator = new Annotator(
+            'https://cdn.shopify.com/s/files/1/0685/5321/2195/files/image.png?v=1747303430',
+            null,
+            predefinedPoints
+        );
+
+        function refreshTable(points) {
+            const tableBody = document.getElementById('points-table-body');
+            const selectedPointId = annotator.selectedPointId; // Get the currently selected point ID
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            points.forEach((point) => {
+                const row = document.createElement('tr');
+                row.dataset.pointId = point.id; // Store point ID in the row
+                row.innerHTML = `
+                    <td>${point.id}</td>
+                    <td>${point.x}</td>
+                    <td>${point.y}</td>
+                    <td>${point.data}</td>
+                    <td><button class="delete-button" data-point-id="${point.id}">Delete</button></td>
+                `;
+                if (point.id === selectedPointId) {
+                    row.classList.add('highlighted'); // Retain the highlight for the selected row
+                }
+                tableBody.appendChild(row);
+            });
+
+            // Add event listeners to delete buttons
+            document.querySelectorAll('.delete-button').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const pointId = parseInt(event.target.dataset.pointId, 10);
+                    annotator.deletePoint(pointId);
+                    refreshTable(annotator.points); // Refresh the table after deletion
+                });
+            });
+        }
+
+        // Set the onPointAdded callback
+        annotator.onPointAdded = (point, points) => {
+            console.log('Point added:', point);
+            refreshTable(points);
+        };
+
+        // Set the onPointClicked callback
+        annotator.onPointClicked = (point) => {
+            console.log('Point clicked:', point);
+
+            // Highlight the corresponding table row
+            const rows = document.querySelectorAll('#points-table-body tr');
+            rows.forEach(row => row.classList.remove('highlighted')); // Remove existing highlights
+            const rowToHighlight = document.querySelector(`#points-table-body tr[data-point-id="${point.id}"]`);
+            if (rowToHighlight) {
+                rowToHighlight.classList.add('highlighted');
+            }
+        };
+
+        // Refresh table with predefined points
+        refreshTable(predefinedPoints);
+
+        // Add event listener to the export button
+        document.getElementById('export-button').addEventListener('click', async () => {
+            try {
+                const exportedImageUrl = await annotator.exportImage();
+                const link = document.createElement('a');
+                link.href = exportedImageUrl;
+                link.download = 'annotated-image.png';
+                link.click();
+            } catch (error) {
+                console.error('Error exporting image:', error);
+            }
+        });
+    </script>
+</body>
+</html>

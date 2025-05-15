@@ -1,0 +1,25 @@
+{
+  "name": "image-annotator-lib",
+  "version": "1.0.0",
+  "description": "A universal JavaScript library for annotating images with points and additional data.",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "rollup -c",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "image",
+    "annotation",
+    "library",
+    "javascript"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "install": "^0.13.0",
+    "npm": "^11.3.0",
+    "rollup": "^2.0.0",
+    "rollup-plugin-terser": "^7.0.0"
+  }
+}
