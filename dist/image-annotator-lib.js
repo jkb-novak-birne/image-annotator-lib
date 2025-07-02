@@ -82,30 +82,28 @@
             };
         }
 
-        setupCanvasEvents() {
-            this.canvas.addEventListener('click', (event) => {
-                const rect = this.canvas.getBoundingClientRect();
-                const x = (event.clientX - rect.left) / this.scaleFactor; // Scale the x-coordinate
-                const y = (event.clientY - rect.top) / this.scaleFactor; // Scale the y-coordinate
+    setupCanvasEvents() {
+        this.canvas.addEventListener('click', (event) => {
+            const rect = this.canvas.getBoundingClientRect();
+            const x = (event.clientX - rect.left) / this.scaleFactor; // Scale the x-coordinate
+            const y = (event.clientY - rect.top) / this.scaleFactor; // Scale the y-coordinate
 
-                // Check if a point was clicked
-                const clickedPoint = this.points.find(point => {
-                    const dx = x - point.x;
-                    const dy = y - point.y;
-                    return Math.sqrt(dx * dx + dy * dy) <= 10 / this.scaleFactor; // Adjust radius for scaling
-                });
-
-                // If a point was clicked, do not create a new one
-                if (clickedPoint) {
-                    return;
-                }
-
-                const data = prompt("Enter damage description:");
-                if (data) {
-                    this.addPoint(x, y, data);
-                }
+            // Check if a point was clicked
+            const clickedPoint = this.points.find(point => {
+                const dx = x - point.x;
+                const dy = y - point.y;
+                return Math.sqrt(dx * dx + dy * dy) <= 10 / this.scaleFactor; // Adjust radius for scaling
             });
-        }
+
+            // If a point was clicked, do not create a new one
+            if (clickedPoint) {
+                return;
+            }
+
+            // Add point without prompting for data
+            this.addPoint(x, y, '');
+        });
+    }
 
         setupPointClickEvents() {
             this.canvas.addEventListener('click', (event) => {
