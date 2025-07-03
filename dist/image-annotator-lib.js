@@ -244,6 +244,43 @@
                 };
             });
         }
+
+        exportImageAsBase64() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = this.canvas.width;
+            canvas.height = this.canvas.height;
+
+            // Draw the original image
+            const img = new Image();
+            img.crossOrigin = 'anonymous'; // Ensure cross-origin compatibility
+            img.src = this.imageUrl;
+            return new Promise((resolve) => {
+                img.onload = () => {
+                    ctx.drawImage(img, 0, 0);
+
+                    // Draw the points as an overlay
+                    this.points.forEach(point => {
+                        // Draw the point
+                        ctx.fillStyle = 'red';
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y, 10, 0, Math.PI * 2); // Match canvas styling
+                        ctx.fill();
+
+                        // Draw the point ID
+                        ctx.fillStyle = 'white';
+                        ctx.font = '12px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(point.id, point.x, point.y);
+                    });
+
+                    // Convert the canvas to a data URL and return it
+                    const annotatedImage = canvas.toDataURL('image/png');
+                    resolve(annotatedImage);
+                };
+            });
+        }
     }
 
     const imageAnnotatorLib = {
