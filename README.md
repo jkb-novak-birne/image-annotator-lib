@@ -21,7 +21,16 @@ const annotator = new Annotator(imageUrl, onPointAdded, initialPoints);
   - `data` (string): Description or additional data for the point.
 - **`deletePoint(pointId)`**: Delete a point by its ID.
   - `pointId` (number): The ID of the point to delete.
-- **`exportImage()`**: Export the annotated image as a data URL.
+- **`exportImage()`**: Export the annotated image and trigger download.
+- **`exportImageAsBase64()`**: Export the annotated image as base64 data URL.
+- **`getAnnotatedImageBase64()`**: Get the annotated image as base64 data URL using current instance data.
+
+### Static Methods
+- **`Annotator.createAnnotatedImageBase64(imageUrl, points)`**: Create annotated image from URL and points data.
+  - `imageUrl` (string): The URL of the image to annotate.
+  - `points` (array): Array of points, each with `id`, `x`, `y`, and `data`.
+  - Returns: Promise that resolves to base64 data URL.
+  - Works in both browser and Node.js environments.
 
 ### Callbacks
 - **`onPointAdded(point, points)`**: Triggered when a point is added.
@@ -80,9 +89,61 @@ Include the library in your project using jsDelivr:
     };
 
     document.getElementById('export-button').addEventListener('click', async () => {
-      const exportedImage = await annotator.exportImage();
-      console.log('Exported Image URL:', exportedImage);
+      await annotator.exportImage();
     });
+
+    // Example: Get base64 from instance
+    const base64Instance = await annotator.getAnnotatedImageBase64();
+    console.log('Base64 from instance:', base64Instance);
+
+    // Example: Get base64 using static method
+    const base64Static = await Annotator.createAnnotatedImageBase64(
+      'https://example.com/image.png',
+      [
+        { id: 1, x: 50, y: 50, data: 'Point 1' },
+        { id: 2, x: 150, y: 100, data: 'Point 2' }
+      ]
+    );
+    console.log('Base64 from static method:', base64Static);
   </script>
 </body>
 </html>
+
+---
+
+## Server-Side Usage (Node.js)
+
+For server-side image annotation, you can use the static method without DOM dependencies:
+
+### Installation
+```bash
+npm install canvas  # Required for Node.js canvas support
+```
+
+### Example
+```javascript
+const Annotator = require('./src/annotator.js');
+
+async function createAnnotatedImage() {
+  try {
+    const base64Image = await Annotator.createAnnotatedImageBase64(
+      'https://example.com/image.jpg',
+      [
+        { id: 1, x: 100, y: 150, data: 'First point' },
+        { id: 2, x: 200, y: 250, data: 'Second point' }
+      ]
+    );
+    
+    console.log('Annotated image as base64:', base64Image);
+    
+    // You can now save to file, send via API, etc.
+    const fs = require('fs');
+    const base64Data = base64Image.replace(/^data:image\/png;base64,/, '');
+    fs.writeFileSync('annotated-image.png', base64Data, 'base64');
+  } catch (error) {
+    console.error('Error creating annotated image:', error);
+  }
+}
+
+createAnnotatedImage();
+```
