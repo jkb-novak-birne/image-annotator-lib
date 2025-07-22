@@ -283,21 +283,20 @@
         }
 
         // Static method to create annotated image from imageUrl and points data
-        // Works in both browser and Node.js environments
+        // Browser only - uses native canvas
         static async createAnnotatedImageBase64(imageUrl, points) {
-            const isNode = typeof window === 'undefined';
-            
-            if (isNode) {
-                // Node.js environment - use node-canvas
-                try {
-                    const { createCanvas, loadImage } = require('canvas');
-                    
-                    // Load the image
-                    const img = await loadImage(imageUrl);
-                    
-                    // Create canvas with original image dimensions
-                    const canvas = createCanvas(img.width, img.height);
-                    const ctx = canvas.getContext('2d');
+            return new Promise((resolve, reject) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.src = imageUrl;
+                
+                img.onload = () => {
+                    // Set canvas size to match image
+                    canvas.width = img.width;
+                    canvas.height = img.height;
                     
                     // Draw the original image
                     ctx.drawImage(img, 0, 0);
@@ -319,52 +318,12 @@
                     });
                     
                     // Convert to base64
-                    return canvas.toDataURL('image/png');
-                } catch (error) {
-                    throw new Error(`Server-side canvas error: ${error.message}`);
-                }
-            } else {
-                // Browser environment
-                return new Promise((resolve, reject) => {
-                    const canvas = document.createElement('canvas');
-                    const ctx = canvas.getContext('2d');
-                    
-                    const img = new Image();
-                    img.crossOrigin = 'anonymous';
-                    img.src = imageUrl;
-                    
-                    img.onload = () => {
-                        // Set canvas size to match image
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        
-                        // Draw the original image
-                        ctx.drawImage(img, 0, 0);
-                        
-                        // Draw the points as an overlay
-                        points.forEach(point => {
-                            // Draw the point
-                            ctx.fillStyle = 'red';
-                            ctx.beginPath();
-                            ctx.arc(point.x, point.y, 10, 0, Math.PI * 2);
-                            ctx.fill();
-                            
-                            // Draw the point ID
-                            ctx.fillStyle = 'white';
-                            ctx.font = '12px Arial';
-                            ctx.textAlign = 'center';
-                            ctx.textBaseline = 'middle';
-                            ctx.fillText(point.id, point.x, point.y);
-                        });
-                        
-                        // Convert to base64
-                        const base64Data = canvas.toDataURL('image/png');
-                        resolve(base64Data);
-                    };
-                    
-                    img.onerror = () => reject(new Error('Failed to load image'));
-                });
-            }
+                    const base64Data = canvas.toDataURL('image/png');
+                    resolve(base64Data);
+                };
+                
+                img.onerror = () => reject(new Error('Failed to load image'));
+            });
         }
 
         // Instance method that uses the static method with current instance data

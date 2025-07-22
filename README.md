@@ -2,6 +2,14 @@
 
 The `image-annotator-lib` is a JavaScript library for annotating images. It allows users to add points with descriptions, interact with points, and export the annotated image.
 
+**Browser only** - This library is designed for browser environments and uses native HTML5 Canvas APIs.
+
+## Installation
+
+```bash
+npm install image-annotator-lib
+```
+
 ---
 
 ## API Reference
@@ -30,7 +38,7 @@ const annotator = new Annotator(imageUrl, onPointAdded, initialPoints);
   - `imageUrl` (string): The URL of the image to annotate.
   - `points` (array): Array of points, each with `id`, `x`, `y`, and `data`.
   - Returns: Promise that resolves to base64 data URL.
-  - Works in both browser and Node.js environments.
+  - Browser only.
 
 ### Callbacks
 - **`onPointAdded(point, points)`**: Triggered when a point is added.
@@ -108,42 +116,3 @@ Include the library in your project using jsDelivr:
   </script>
 </body>
 </html>
-
----
-
-## Server-Side Usage (Node.js)
-
-For server-side image annotation, you can use the static method without DOM dependencies:
-
-### Installation
-```bash
-npm install canvas  # Required for Node.js canvas support
-```
-
-### Example
-```javascript
-const Annotator = require('./src/annotator.js');
-
-async function createAnnotatedImage() {
-  try {
-    const base64Image = await Annotator.createAnnotatedImageBase64(
-      'https://example.com/image.jpg',
-      [
-        { id: 1, x: 100, y: 150, data: 'First point' },
-        { id: 2, x: 200, y: 250, data: 'Second point' }
-      ]
-    );
-    
-    console.log('Annotated image as base64:', base64Image);
-    
-    // You can now save to file, send via API, etc.
-    const fs = require('fs');
-    const base64Data = base64Image.replace(/^data:image\/png;base64,/, '');
-    fs.writeFileSync('annotated-image.png', base64Data, 'base64');
-  } catch (error) {
-    console.error('Error creating annotated image:', error);
-  }
-}
-
-createAnnotatedImage();
-```
